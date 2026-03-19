@@ -440,7 +440,7 @@ export default class GoalsController {
         return res.status(400).json({
           status: "error",
           message: "Parâmetros inválidos",
-          errors: error.errors.map(err => ({
+          errors: error.issues.map(err => ({
             field: err.path.join('.'),
             message: err.message
           }))

@@ -6,3 +6,7 @@ export const goalParamsSchema = z.object({
   match_id: z.coerce.number().int().positive(),
   goal_id: z.coerce.number().int().positive().optional()
 })
+
+export const userParamsSchema = z.object({
+  id: z.coerce.number().int().positive(),
+})

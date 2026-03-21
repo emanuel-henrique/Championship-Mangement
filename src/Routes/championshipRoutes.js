@@ -7,12 +7,13 @@ import CardsController from "../Controllers/CardsControllers.js";
 import FinishMatchController from "../Controllers/FinishMatchController.js";
 import ChampionshipViewController from "../Controllers/ChampionshipViewController.js";
 import MatchViewController from "../Controllers/MatchViewController.js"
+import { prisma } from "../lib/prisma.js";
 
 const championshipRoutes = Router()
 const championshipController = new Championship()
 const teamChampionshipController = new TeamsChampionshipController()
 const matchesController = new MatchesController()
-const goalsController = new GoalsController()
+const goalsController = new GoalsController(prisma)
 const cardsController = new CardsController()
 const finishMatchController = new FinishMatchController()
 const championshipViewController = new ChampionshipViewController()
@@ -44,8 +45,8 @@ championshipRoutes.put("/:champ_id/:user_id/matches/:match_id", matchesControlle
 championshipRoutes.delete("/:champ_id/:user_id/matches/:match_id", matchesController.Delete)
 
 // CHAMPIONSHIP MATCHES GOALS MANAGEMENT ROUTES
-championshipRoutes.post("/:champ_id/:user_id/matches/:match_id/details/goals", goalsController.Create)
-championshipRoutes.delete("/:champ_id/:user_id/matches/:match_id/details/goals/:goal_id", goalsController.Delete)
+championshipRoutes.post("/:champ_id/:user_id/matches/:match_id/details/goals", goalsController.Create.bind(goalsController))
+championshipRoutes.delete("/:champ_id/:user_id/matches/:match_id/details/goals/:goal_id", goalsController.Delete.bind(goalsController))
 
 // CHAMPIONSHIP MATCHES CARDS MANAGEMENT ROUTES
 championshipRoutes.post("/:champ_id/:user_id/matches/:match_id/details/cards", cardsController.Create)

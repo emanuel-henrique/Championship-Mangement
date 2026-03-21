@@ -1,9 +1,12 @@
 import z from "zod"
-import { prisma } from "../lib/prisma.js"
 import { createGoalSchema } from "../Schemas/goal.schema.js"
 import { goalParamsSchema } from "../Schemas/params.schema.js"
 
 export default class GoalsController {
+  constructor(prisma) {
+    this.prisma = prisma
+  }
+
   async Create(req, res) {
     try {
       const body = createGoalSchema.parse(req.body)
@@ -12,7 +15,7 @@ export default class GoalsController {
       const { player_id, team_id, minute, isOwnGoal, assist_player_id } = body
       const { champ_id, user_id, match_id } = params
 
-      const user = await prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id: user_id }
       })
 
@@ -23,7 +26,7 @@ export default class GoalsController {
         })
       }
 
-      const championship = await prisma.championship.findUnique({
+      const championship = await this.prisma.championship.findUnique({
         where: { id: champ_id }
       })
 
@@ -34,7 +37,7 @@ export default class GoalsController {
         })
       }
 
-      const match = await prisma.match.findUnique({
+      const match = await this.prisma.match.findUnique({
         where: { id: match_id }
       })
 
@@ -66,7 +69,7 @@ export default class GoalsController {
         })
       }
 
-      const team = await prisma.team.findUnique({
+      const team = await this.prisma.team.findUnique({
         where: { id: team_id }
       })
 
@@ -84,7 +87,7 @@ export default class GoalsController {
         })
       }
 
-      const player = await prisma.player.findUnique({
+      const player = await this.prisma.player.findUnique({
         where: { id: player_id }
       })
 
@@ -102,7 +105,7 @@ export default class GoalsController {
         })
       }
 
-      const championshipPlayer = await prisma.championshipPlayer.findUnique({
+      const championshipPlayer = await this.prisma.championshipPlayer.findUnique({
         where: {
           championshipId_playerId: {
             championshipId: champ_id,
@@ -123,7 +126,7 @@ export default class GoalsController {
       let opponentId
 
       if (isOwnGoal) {
-        await prisma.championshipTeam.update({
+        await this.prisma.championshipTeam.update({
           where: {
             championshipId_teamId: {
               championshipId: champ_id,
@@ -143,7 +146,7 @@ export default class GoalsController {
           opponentId = match.homeTeamId
         }
 
-        await prisma.championshipTeam.update({
+        await this.prisma.championshipTeam.update({
           where: {
             championshipId_teamId: {
               championshipId: champ_id,
@@ -155,7 +158,7 @@ export default class GoalsController {
           }
         })
       } else {
-        await prisma.championshipTeam.update({
+        await this.prisma.championshipTeam.update({
           where: {
             championshipId_teamId: {
               championshipId: champ_id,
@@ -175,7 +178,7 @@ export default class GoalsController {
           opponentId = match.homeTeamId
         }
 
-        await prisma.championshipTeam.update({
+        await this.prisma.championshipTeam.update({
           where: {
             championshipId_teamId: {
               championshipId: champ_id,
@@ -188,7 +191,7 @@ export default class GoalsController {
         })
       }
 
-      const goal = await prisma.goal.create({
+      const goal = await this.prisma.goal.create({
         data: {
           matchId: match_id,
           playerId: player_id,
@@ -199,7 +202,7 @@ export default class GoalsController {
         }
       })
 
-      const updatedMatch = await prisma.match.update({
+      const updatedMatch = await this.prisma.match.update({
         where: { id: match_id },
         data: {
           homeScore: newHomeTeamScore,
@@ -209,7 +212,7 @@ export default class GoalsController {
       })
 
       if (!isOwnGoal) {
-        await prisma.championshipPlayer.update({
+        await this.prisma.championshipPlayer.update({
           where: {
             championshipId_playerId: {
               championshipId: champ_id,
@@ -223,7 +226,7 @@ export default class GoalsController {
       }
 
       if (assist_player_id) {
-        await prisma.championshipPlayer.update({
+        await this.prisma.championshipPlayer.update({
           where: {
             championshipId_playerId: {
               championshipId: champ_id,
@@ -269,7 +272,7 @@ export default class GoalsController {
       const params = goalParamsSchema.parse(req.params)
       const { champ_id, user_id, match_id, goal_id } = params
 
-      const user = await prisma.user.findUnique({
+      const user = await this.prisma.user.findUnique({
         where: { id: user_id }
       })
 
@@ -280,7 +283,7 @@ export default class GoalsController {
         })
       }
 
-      const champToRemoveMatchGoal = await prisma.championship.findUnique({
+      const champToRemoveMatchGoal = await this.prisma.championship.findUnique({
         where: {
           id: champ_id
         }
@@ -293,7 +296,7 @@ export default class GoalsController {
         })
       }
 
-      const matchToRemoveGoal = await prisma.match.findUnique({
+      const matchToRemoveGoal = await this.prisma.match.findUnique({
         where: { id: match_id }
       })
 
@@ -325,7 +328,7 @@ export default class GoalsController {
         })
       }
 
-      const goalToRemove = await prisma.goal.findUnique({
+      const goalToRemove = await this.prisma.goal.findUnique({
         where: {
           id: goal_id,
           matchId: match_id
@@ -348,7 +351,7 @@ export default class GoalsController {
       if (goalToRemove.isOwnGoal) {
         scoreField = isHomeTeam ? 'awayScore' : 'homeScore'
 
-        await prisma.championshipTeam.update({
+        await this.prisma.championshipTeam.update({
           where: {
             championshipId_teamId: {
               championshipId: champ_id,
@@ -358,7 +361,7 @@ export default class GoalsController {
           data: { goalsAgainst: { decrement: 1 } }
         })
 
-        await prisma.championshipTeam.update({
+        await this.prisma.championshipTeam.update({
           where: {
             championshipId_teamId: {
               championshipId: champ_id,
@@ -369,7 +372,7 @@ export default class GoalsController {
         })
 
       } else {
-        await prisma.championshipTeam.update({
+        await this.prisma.championshipTeam.update({
           where: {
             championshipId_teamId: {
               championshipId: champ_id,
@@ -379,7 +382,7 @@ export default class GoalsController {
           data: { goalsFor: { decrement: 1 } }
         })
 
-        await prisma.championshipTeam.update({
+        await this.prisma.championshipTeam.update({
           where: {
             championshipId_teamId: {
               championshipId: champ_id,
@@ -390,19 +393,19 @@ export default class GoalsController {
         })
       }
 
-      await prisma.match.update({
+      await this.prisma.match.update({
         where: { id: matchToRemoveGoal.id },
         data: { [scoreField]: { decrement: 1 } }
       })
 
-      await prisma.goal.delete({
+      await this.prisma.goal.delete({
         where: {
           id: goalToRemove.id
         }
       })
 
       if (!goalToRemove.isOwnGoal) {
-        await prisma.championshipPlayer.update({
+        await this.prisma.championshipPlayer.update({
           where: {
             championshipId_playerId: {
               championshipId: champ_id,
@@ -416,7 +419,7 @@ export default class GoalsController {
       }
 
       if (goalToRemove.assistPlayerId) {
-        await prisma.championshipPlayer.update({
+        await this.prisma.championshipPlayer.update({
           where: {
             championshipId_playerId: {
               championshipId: champ_id,

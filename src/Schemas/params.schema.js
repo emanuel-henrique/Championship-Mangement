@@ -46,3 +46,21 @@ export const deleteCardParamsSchema = baseCardParamsSchema.extend({
     invalid_type_error: "ID do cartão deve ser um número"
   }).int().positive()
 })
+
+export const championshipViewerParamsSchema = z.object({
+  champ_id: z.coerce.number({
+    required_error: "ID do campeonato é obrigatório",
+    invalid_type_error: "ID do campeonato deve ser um número"
+  }).int().positive(),
+
+  user_id: z.coerce.number({
+    required_error: "ID do usuário é obrigatório",
+    invalid_type_error: "ID do usuário deve ser um número"
+  }).int().positive(),
+})
+
+export const championshipViewerQuerySchema = z.object({
+  status: z.string()
+    .trim()
+    .optional()
+})

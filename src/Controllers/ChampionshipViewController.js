@@ -1,219 +1,80 @@
+import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
+import { championshipViewerParamsSchema, championshipViewerQuerySchema } from "../Schemas/params.schema.js"
 
 export default class ChampionshipViewController {
   async Overview(req, res) {
-    const { user_id, champ_id } = req.params
+    try {
+      const params = championshipViewerParamsSchema.parse(req.params)
+      const { user_id, champ_id } = params
 
-    const user = await prisma.user.findUnique({
-      where: {
-        id: +user_id
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "Usuário não encontrado."
+      const user = await prisma.user.findUnique({
+        where: {
+          id: user_id
+        }
       })
-    }
 
-    const championship = await prisma.championship.findUnique({
-      where: {
-        id: +champ_id
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "Usuário não encontrado."
+        })
       }
-    })
 
-    if (!championship) {
-      return res.status(404).json({
-        status: "error",
-        message: "Campeonato não encontrado."
+      const championship = await prisma.championship.findUnique({
+        where: {
+          id: champ_id
+        }
       })
-    }
 
-    const goalsCount = await prisma.goal.count({
-      where: {
-        match: {
+      if (!championship) {
+        return res.status(404).json({
+          status: "error",
+          message: "Campeonato não encontrado."
+        })
+      }
+
+      const goalsCount = await prisma.goal.count({
+        where: {
+          match: {
+            championshipId: championship.id
+          }
+        }
+      })
+
+      const matchCount = await prisma.match.count({
+        where: {
           championshipId: championship.id
         }
-      }
-    })
+      })
 
-    const matchCount = await prisma.match.count({
-      where: {
-        championshipId: championship.id
-      }
-    })
-
-    const topScorer = await prisma.championshipPlayer.findFirst({
-      where: {
-        championshipId: +champ_id,
-        goals: { gt: 0 }
-      },
-      orderBy: {
-        goals: 'desc'
-      },
-      include: {
-        player: {
-          select: {
-            id: true,
-            name: true
-          }
-        }
-      }
-    })
-
-    const leader = await prisma.championshipTeam.findFirst({
-      where: {
-        championshipId: +champ_id
-      },
-      orderBy: {
-        points: 'desc'
-      },
-      include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-            emblemUrl: true
-          }
-        }
-      }
-    })
-
-    return res.status(200).json({
-      status: "success",
-      data: {
-        stats: {
-          totalGoals: goalsCount,
-          totalMatches: matchCount
+      const topScorer = await prisma.championshipPlayer.findFirst({
+        where: {
+          championshipId: champ_id,
+          goals: { gt: 0 }
         },
-        topScorer: topScorer ? {
-          name: topScorer.player.name,
-          goals: topScorer.goals
-        } : null,
-        leader: leader ? {
-          name: leader.team.name,
-          points: leader.points
-        } : null
-      }
-    })
-  }
-
-  async Standings(req, res) {
-    const { user_id, champ_id } = req.params
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: +user_id
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "Usuário não encontrado."
-      })
-    }
-
-    const championship = await prisma.championship.findUnique({
-      where: {
-        id: +champ_id
-      }
-    })
-
-    if (!championship) {
-      return res.status(404).json({
-        status: "error",
-        message: "Campeonato não encontrado."
-      })
-    }
-
-    const standings = await prisma.championshipTeam.findMany({
-      where: {
-        championshipId: championship.id
-      },
-      orderBy: [
-        { points: 'desc' },
-        { wins: 'desc' },
-        { goalsFor: 'desc' }
-      ],
-      include: {
-        team: {
-          select: {
-            id: true,
-            name: true,
-            emblemUrl: true
-          }
-        }
-      }
-    })
-
-    return res.status(200).json({
-      status: "success",
-      data: {
-        standings
-      }
-    })
-  }
-
-  async Matches(req, res) {
-    const { user_id, champ_id } = req.params
-    const { status } = req.query
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: +user_id
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "Usuário não encontrado."
-      })
-    }
-
-    const championship = await prisma.championship.findUnique({
-      where: {
-        id: +champ_id
-      }
-    })
-
-    if (!championship) {
-      return res.status(404).json({
-        status: "error",
-        message: "Campeonato não encontrado."
-      })
-    }
-
-    let where = {
-      championshipId: championship.id
-    }
-
-    if (status) {
-      where.status = status.toUpperCase()
-    }
-
-    try {
-      const matches = await prisma.match.findMany({
-        where,
-        orderBy: [
-          { matchDate: 'asc' }
-        ],
-        select: {
-          id: true,
-          matchDate: true,
-          homeScore: true,
-          awayScore: true,
-          status: true,
-          awayTeam: {
+        orderBy: {
+          goals: 'desc'
+        },
+        include: {
+          player: {
             select: {
               id: true,
-              name: true,
-              emblemUrl: true
+              name: true
             }
-          },
-          homeTeam: {
+          }
+        }
+      })
+
+      const leader = await prisma.championshipTeam.findFirst({
+        where: {
+          championshipId: champ_id
+        },
+        orderBy: {
+          points: 'desc'
+        },
+        include: {
+          team: {
             select: {
               id: true,
               name: true,
@@ -226,132 +87,377 @@ export default class ChampionshipViewController {
       return res.status(200).json({
         status: "success",
         data: {
-          matches
+          stats: {
+            totalGoals: goalsCount,
+            totalMatches: matchCount
+          },
+          topScorer: topScorer ? {
+            name: topScorer.player.name,
+            goals: topScorer.goals
+          } : null,
+          leader: leader ? {
+            name: leader.team.name,
+            points: leader.points
+          } : null
         }
       })
-    } catch (error) {
+    }
+    catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: "error",
+          message: "Parâmetros inválidos",
+          errors: error.issues.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        })
+      }
+
+      console.error('Erro ao buscar dados:', error)
       return res.status(500).json({
         status: "error",
-        message: "Erro ao buscar partidas."
+        message: "Erro interno do servidor."
       })
     }
   }
 
-  async Teams(req, res) {
-    const { user_id, champ_id } = req.params
+  async Standings(req, res) {
+    try {
+      const params = championshipViewerParamsSchema.parse(req.params)
+      const { user_id, champ_id } = params
 
-    const user = await prisma.user.findUnique({
-      where: {
-        id: +user_id
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "Usuário não encontrado."
+      const user = await prisma.user.findUnique({
+        where: {
+          id: user_id
+        }
       })
-    }
 
-    const championship = await prisma.championship.findUnique({
-      where: {
-        id: +champ_id
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "Usuário não encontrado."
+        })
       }
-    })
 
-    if (!championship) {
-      return res.status(404).json({
-        status: "error",
-        message: "Campeonato não encontrado."
+      const championship = await prisma.championship.findUnique({
+        where: {
+          id: champ_id
+        }
       })
-    }
 
-    const teams = await prisma.championshipTeam.findMany({
-      where: {
-        championshipId: +champ_id
-      },
-      select: {
-        id: true,
-        championshipId: true,
-        team: {
-          select: {
-            id: true,
-            name: true,
-            emblemUrl: true,
-            _count: {
-              select: { players: true }
+      if (!championship) {
+        return res.status(404).json({
+          status: "error",
+          message: "Campeonato não encontrado."
+        })
+      }
+
+      const standings = await prisma.championshipTeam.findMany({
+        where: {
+          championshipId: championship.id
+        },
+        orderBy: [
+          { points: 'desc' },
+          { wins: 'desc' },
+          { goalsFor: 'desc' }
+        ],
+        include: {
+          team: {
+            select: {
+              id: true,
+              name: true,
+              emblemUrl: true
             }
           }
         }
-      }
-    })
+      })
 
-    return res.status(200).json({
-      status: "success",
-      data: {
-        teams
+      return res.status(200).json({
+        status: "success",
+        data: {
+          standings
+        }
+      })
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: "error",
+          message: "Parâmetros inválidos",
+          errors: error.issues.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        })
       }
-    })
+
+      console.error('Erro ao buscar dados:', error)
+      return res.status(500).json({
+        status: "error",
+        message: "Erro interno do servidor."
+      })
+    }
   }
 
-  async TopScorers(req, res) {
-    const { user_id, champ_id } = req.params
+  async Matches(req, res) {
+    try {
+      const params = championshipViewerParamsSchema.parse(req.params)
+      const { user_id, champ_id } = params
 
-    const user = await prisma.user.findUnique({
-      where: {
-        id: +user_id
-      }
-    })
+      const query = championshipViewerQuerySchema.parse(req.query)
+      const { status } = query
 
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "Usuário não encontrado."
+      const user = await prisma.user.findUnique({
+        where: {
+          id: user_id
+        }
       })
-    }
 
-    const championship = await prisma.championship.findUnique({
-      where: {
-        id: +champ_id
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "Usuário não encontrado."
+        })
       }
-    })
 
-    if (!championship) {
-      return res.status(404).json({
-        status: "error",
-        message: "Campeonato não encontrado."
+      const championship = await prisma.championship.findUnique({
+        where: {
+          id: champ_id
+        }
       })
-    }
 
-    const topscorers = await prisma.championshipPlayer.findMany({
-      where: {
+      if (!championship) {
+        return res.status(404).json({
+          status: "error",
+          message: "Campeonato não encontrado."
+        })
+      }
+
+      let where = {
         championshipId: championship.id
-      },
-      orderBy: {
-        goals: "desc"
-      },
-      select: {
-        goals: true,
-        player: {
+      }
+
+      if (status) {
+        where.status = status.toUpperCase()
+      }
+
+      try {
+        const matches = await prisma.match.findMany({
+          where,
+          orderBy: [
+            { matchDate: 'asc' }
+          ],
           select: {
-            name: true,
-            team: {
+            id: true,
+            matchDate: true,
+            homeScore: true,
+            awayScore: true,
+            status: true,
+            awayTeam: {
+              select: {
+                id: true,
+                name: true,
+                emblemUrl: true
+              }
+            },
+            homeTeam: {
               select: {
                 id: true,
                 name: true,
                 emblemUrl: true
               }
             }
-          },
-        }
-      },
-    })
+          }
+        })
 
-    return res.status(200).json({
-      status: "success",
-      data: {
-        topscorers
+        return res.status(200).json({
+          status: "success",
+          data: {
+            matches
+          }
+        })
+      } catch (error) {
+        return res.status(500).json({
+          status: "error",
+          message: "Erro ao buscar partidas."
+        })
       }
-    })
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: "error",
+          message: "Parâmetros inválidos",
+          errors: error.issues.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        })
+      }
+
+      console.error('Erro ao buscar dados:', error)
+      return res.status(500).json({
+        status: "error",
+        message: "Erro interno do servidor."
+      })
+    }
+  }
+
+  async Teams(req, res) {
+    try {
+      const params = championshipViewerParamsSchema.parse(req.params)
+      const { user_id, champ_id } = params
+
+      const user = await prisma.user.findUnique({
+        where: {
+          id: user_id
+        }
+      })
+
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "Usuário não encontrado."
+        })
+      }
+
+      const championship = await prisma.championship.findUnique({
+        where: {
+          id: champ_id
+        }
+      })
+
+      if (!championship) {
+        return res.status(404).json({
+          status: "error",
+          message: "Campeonato não encontrado."
+        })
+      }
+
+      const teams = await prisma.championshipTeam.findMany({
+        where: {
+          championshipId: champ_id
+        },
+        select: {
+          id: true,
+          championshipId: true,
+          team: {
+            select: {
+              id: true,
+              name: true,
+              emblemUrl: true,
+              _count: {
+                select: { players: true }
+              }
+            }
+          }
+        }
+      })
+
+      return res.status(200).json({
+        status: "success",
+        data: {
+          teams
+        }
+      })
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: "error",
+          message: "Parâmetros inválidos",
+          errors: error.issues.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        })
+      }
+
+      console.error('Erro ao buscar dados:', error)
+      return res.status(500).json({
+        status: "error",
+        message: "Erro interno do servidor."
+      })
+    }
+  }
+
+  async TopScorers(req, res) {
+    try {
+      const params = championshipViewerParamsSchema.parse(req.params)
+      const { user_id, champ_id } = params
+
+      const user = await prisma.user.findUnique({
+        where: {
+          id: user_id
+        }
+      })
+
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "Usuário não encontrado."
+        })
+      }
+
+      const championship = await prisma.championship.findUnique({
+        where: {
+          id: champ_id
+        }
+      })
+
+      if (!championship) {
+        return res.status(404).json({
+          status: "error",
+          message: "Campeonato não encontrado."
+        })
+      }
+
+      const topscorers = await prisma.championshipPlayer.findMany({
+        where: {
+          championshipId: championship.id,
+          goals: { gt: 0 }
+        },
+        orderBy: {
+          goals: "desc"
+        },
+        select: {
+          goals: true,
+          player: {
+            select: {
+              name: true,
+              team: {
+                select: {
+                  id: true,
+                  name: true,
+                  emblemUrl: true
+                }
+              }
+            },
+          }
+        },
+      })
+
+      return res.status(200).json({
+        status: "success",
+        data: {
+          topscorers
+        }
+      })
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: "error",
+          message: "Parâmetros inválidos",
+          errors: error.issues.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        })
+      }
+
+      console.error('Erro ao buscar dados:', error)
+      return res.status(500).json({
+        status: "error",
+        message: "Erro interno do servidor."
+      })
+    }
   }
 }

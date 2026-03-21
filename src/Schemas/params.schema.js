@@ -22,3 +22,27 @@ export const championshipParamsSchema = baseChampionshipParamsSchema.extend({
     required_error: "Championship id is required"
   })
 })
+
+export const baseCardParamsSchema = z.object({
+  champ_id: z.coerce.number({
+    required_error: "ID do campeonato é obrigatório",
+    invalid_type_error: "ID do campeonato deve ser um número"
+  }).int().positive(),
+
+  user_id: z.coerce.number({
+    required_error: "ID do usuário é obrigatório",
+    invalid_type_error: "ID do usuário deve ser um número"
+  }).int().positive(),
+
+  match_id: z.coerce.number({
+    required_error: "ID da partida é obrigatório",
+    invalid_type_error: "ID da partida deve ser um número"
+  }).int().positive(),
+})
+
+export const deleteCardParamsSchema = baseCardParamsSchema.extend({
+  card_id: z.coerce.number({
+    required_error: "ID do cartão é obrigatório",
+    invalid_type_error: "ID do cartão deve ser um número"
+  }).int().positive()
+})

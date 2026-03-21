@@ -22,6 +22,7 @@ const matchViewController = new MatchViewController()
 // CHAMPIONSHIP DEFAULT ROUTES
 championshipRoutes.post("/:user_id", championshipController.Create)
 championshipRoutes.put("/:user_id/:champ_id", championshipController.Update)
+championshipRoutes.delete("/:user_id/:champ_id", championshipController.Delete)
 championshipRoutes.get("/:user_id/", championshipController.Index)
 
 // CHAMPIONSHIP GETS

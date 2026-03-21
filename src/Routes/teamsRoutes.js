@@ -12,6 +12,6 @@ teamsRoutes.put("/:user_id/:team_id", teamsController.Update)
 teamsRoutes.get("/:user_id", teamsController.Index)
 
 teamsRoutes.post("/:team_id/:user_id/add/:player_id", playersTeamsController.Create)
-//teamsRoutes.delete("/:champ_id/remove/:team_id", playersTeamsController.Delete)
+//teamsRoutes.delete("/:team_id/:user_id/remove/:player_id", playersTeamsController.Delete)
 
 export default teamsRoutes

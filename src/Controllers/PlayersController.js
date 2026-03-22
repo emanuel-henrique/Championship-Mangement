@@ -77,7 +77,6 @@ export default class PlayersController {
         })
       }
 
-      // Correção Crítica: Mudado de prisma.team para prisma.player
       const playerToUpdate = await prisma.player.findUnique({
         where: {
           id: player_id,
@@ -150,7 +149,6 @@ export default class PlayersController {
         })
       }
 
-      // O catch original retornava 404, mantive a essência se for erro do prisma
       return res.status(404).json({
         status: "error",
         message: "Player não encontrado ou erro ao deletar."

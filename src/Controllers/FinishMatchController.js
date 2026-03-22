@@ -1,11 +1,11 @@
-import { z } from "zod" // <-- Import adicionado para o catch funcionar
+import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
-import { finishParamsSchema } from "../Schemas/params.schema.js"
+import { matchParamsSchema } from "../Schemas/params.schema.js"
 
 export default class FinishMatchController {
   async Finish(req, res) {
     try {
-      const params = finishParamsSchema.parse(req.params)
+      const params = matchParamsSchema.parse(req.params)
       const { champ_id, user_id, match_id } = params
 
       const user = await prisma.user.findUnique({

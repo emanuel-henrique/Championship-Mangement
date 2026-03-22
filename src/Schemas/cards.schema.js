@@ -14,7 +14,7 @@ export const createCardSchema = z.object({
     .trim()
     .transform(val => val.toUpperCase())
     .refine(val => types.includes(val), {
-      message: "Invalid modality"
+      message: "Invalid card type"
     }),
 
   minute: z.coerce

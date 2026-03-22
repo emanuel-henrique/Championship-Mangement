@@ -65,8 +65,11 @@ export const championshipViewerQuerySchema = z.object({
     .optional()
 })
 
-export const finishParamsSchema = z.object({
+export const baseMatchParamsSchema = z.object({
   user_id: z.coerce.number().int().positive(),
-  champ_id: z.coerce.number().int().positive(),
+  champ_id: z.coerce.number().int().positive()
+})
+
+export const matchParamsSchema = baseMatchParamsSchema.extend({
   match_id: z.coerce.number().int().positive()
 })

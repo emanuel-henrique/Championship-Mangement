@@ -55,7 +55,6 @@ export default class PlayersTeamsController {
         }
       })
 
-      // REGRA DE NEGÓCIO: Bloqueia a transferência se o jogador já estiver no campeonato
       if (theTeamHasInAChamphionship) {
         const isPlayerAlreadyInChampionship = await prisma.championshipPlayer.findFirst({
           where: {
@@ -71,7 +70,6 @@ export default class PlayersTeamsController {
           })
         }
 
-        // Se passar da validação, cadastra o jogador no campeonato
         await prisma.championshipPlayer.create({
           data: {
             championshipId: theTeamHasInAChamphionship.championshipId,

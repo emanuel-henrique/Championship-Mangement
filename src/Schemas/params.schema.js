@@ -69,7 +69,13 @@ export const baseMatchParamsSchema = z.object({
   user_id: z.coerce.number().int().positive(),
   champ_id: z.coerce.number().int().positive()
 })
-
 export const matchParamsSchema = baseMatchParamsSchema.extend({
   match_id: z.coerce.number().int().positive()
+})
+
+export const basePlayerParamsSchema = z.object({
+  user_id: z.coerce.number().int().positive(),
+})
+export const playerParamsSchema = baseMatchParamsSchema.extend({
+  player_id: z.coerce.number().int().positive(),
 })

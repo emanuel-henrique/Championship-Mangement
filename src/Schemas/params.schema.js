@@ -89,3 +89,5 @@ export const deleteTeamParamsSchema = z.object({
   user_id: z.coerce.number().int().positive(),
   team_id: z.coerce.number().int().positive()
 })
+
+export const updateTeamParamsSchema = deleteTeamParamsSchema

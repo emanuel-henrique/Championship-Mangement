@@ -7,7 +7,7 @@ const teamsController = new TeamsController()
 const playersTeamsController = new PlayersTeamsController()
 
 teamsRoutes.post("/:user_id", teamsController.Create)
-teamsRoutes.delete("/:team_id", teamsController.Delete)
+teamsRoutes.delete("/:user_id/:team_id", teamsController.Delete)
 teamsRoutes.put("/:user_id/:team_id", teamsController.Update)
 teamsRoutes.get("/:user_id", teamsController.Index)
 

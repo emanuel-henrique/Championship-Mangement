@@ -1,179 +1,200 @@
+import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
+import { basePlayerParamsSchema, updateTeamParamsSchema } from "../Schemas/params.schema.js"
+import { createTeamSchema, updateTeamSchema } from "../Schemas/teams.schema.js"
 
 export default class TeamsController {
   async Create(req, res) {
-    const { name, emblemUrl } = req.body
-    const { user_id } = req.params
+    try {
+      const body = createTeamSchema.parse(req.body)
+      const { name, emblemUrl } = body
 
-    const userId = Number(user_id)
+      const params = basePlayerParamsSchema.parse(req.params)
+      const { user_id } = params
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId }
-    })
-
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "Usuário não encontrado."
+      const user = await prisma.user.findUnique({
+        where: { id: user_id }
       })
-    }
 
-    if (!name?.trim()) {
-      return res.status(400).json({
-        status: "error",
-        message: "Preencha o nome do time."
-      })
-    }
-
-    const rawName = name
-
-    const formattedName = rawName
-      .trim()
-      .replace(/\s+/g, " ")
-
-    const nameIsAlreadyInUse = await prisma.team.findFirst({
-      where: {
-        userId,
-        name: formattedName
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "Usuário não encontrado."
+        })
       }
-    })
 
-    if (nameIsAlreadyInUse) {
-      return res.status(400).json({
-        status: "error",
-        message: "Você já criou um time com este nome."
+      const nameIsAlreadyInUse = await prisma.team.findFirst({
+        where: {
+          userId: user_id,
+          name,
+        }
       })
-    }
 
-    const team = await prisma.team.create({
-      data: {
-        name: formattedName,
-        emblemUrl: emblemUrl?.trim() ?? "",
-        userId
+      if (nameIsAlreadyInUse) {
+        return res.status(400).json({
+          status: "error",
+          message: "Você já criou um time com este nome."
+        })
       }
-    })
 
-    return res.status(201).json(team)
+      const team = await prisma.team.create({
+        data: {
+          name,
+          emblemUrl,
+          userId: user_id
+        }
+      })
+
+      return res.status(201).json(team)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: "error",
+          message: "Parâmetros inválidos",
+          errors: error.issues.map(err => ({
+            field: err.path.join('.'),
+            message: err.message
+          }))
+        })
+      }
+      console.error('Erro ao criar time:', error)
+      return res.status(500).json({ status: "error", message: "Erro interno do servidor." })
+    }
   }
 
   async Update(req, res) {
-    const { name } = req.body
-    const { team_id, user_id } = req.params
+    try {
+      const body = updateTeamSchema.parse(req.body)
+      const { name, emblemUrl } = body
 
-    const user = await prisma.user.findUnique({
-      where: {
-        id: +user_id
-      }
-    })
+      const params = updateTeamParamsSchema.parse(req.params)
+      const { team_id, user_id } = params
 
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "Usuário não encontrado."
+      const user = await prisma.user.findUnique({
+        where: { id: user_id }
       })
-    }
 
-    const teamToUpdate = await prisma.team.findUnique({
-      where: {
-        id: +team_id,
-        userId: +user_id
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "Usuário não encontrado."
+        })
       }
-    })
 
-    if (!teamToUpdate) {
-      return res.status(404).json({
-        status: "error",
-        message: "Time não encontrado."
+      const teamToUpdate = await prisma.team.findUnique({
+        where: {
+          id: team_id,
+          userId: user_id
+        }
       })
-    }
 
-    if (!name?.trim()) {
-      return res.status(400).json({
-        status: "error",
-        message: "Preencha todos os campos."
-      })
-    }
-
-    const rawName = name
-
-    const formattedName = rawName
-      .trim()
-      .replace(/\s+/g, " ")
-
-    const nameIsAlreadyInUse = await prisma.team.findFirst({
-      where: {
-        userId: +user_id,
-        name: formattedName
+      if (!teamToUpdate) {
+        return res.status(404).json({
+          status: "error",
+          message: "Time não encontrado."
+        })
       }
-    })
 
-    if (nameIsAlreadyInUse) {
-      return res.status(400).json({
-        status: "error",
-        message: "Você já possui um time com este nome."
-      })
-    }
+      if (name) {
+        const nameIsAlreadyInUse = await prisma.team.findFirst({
+          where: {
+            userId: user_id,
+            name,
+            id: { not: team_id }
+          }
+        })
 
-    const updatedTeam = await prisma.team.update({
-      where: {
-        id: teamToUpdate.id
-      },
-      data: {
-        name,
+        if (nameIsAlreadyInUse) {
+          return res.status(400).json({
+            status: "error",
+            message: "Você já possui outro time com este nome."
+          })
+        }
       }
-    })
 
-    return res.status(200).json(updatedTeam)
+      const updatedTeam = await prisma.team.update({
+        where: {
+          id: teamToUpdate.id
+        },
+        data: {
+          name,
+          emblemUrl
+        }
+      })
+
+      return res.status(200).json(updatedTeam)
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: "error",
+          message: "Parâmetros inválidos",
+          errors: error.issues.map(err => ({ field: err.path.join('.'), message: err.message }))
+        })
+      }
+      console.error('Erro ao atualizar time:', error)
+      return res.status(500).json({ status: "error", message: "Erro interno do servidor." })
+    }
   }
 
   async Delete(req, res) {
-    const { team_id } = req.params
-
     try {
+      const params = updateTeamParamsSchema.parse(req.params)
+      const { team_id, user_id } = params
+
       const teamToDelete = await prisma.team.delete({
         where: {
-          id: +team_id
+          id: team_id,
+          userId: user_id
         }
       })
 
       return res.status(200).json(teamToDelete)
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: "error",
+          message: "Parâmetros inválidos",
+          errors: error.issues.map(err => ({ field: err.path.join('.'), message: err.message }))
+        })
+      }
       return res.status(404).json({
         status: "error",
-        message: "Time não encontrado."
+        message: "Time não encontrado ou erro ao deletar."
       })
     }
   }
 
   async Index(req, res) {
-    const { user_id } = req.params
-    const { search } = req.query
-
-    const user = await prisma.user.findUnique({
-      where: {
-        id: +user_id
-      }
-    })
-
-    if (!user) {
-      return res.status(404).json({
-        status: "error",
-        message: "Usuário não encontrado."
-      })
-    }
-
-    const where = {
-      userId: +user_id
-    }
-
-    if (search) {
-      where.name = {
-        contains: search,
-        mode: 'insensitive'
-      }
-    }
-
     try {
+      const params = basePlayerParamsSchema.parse(req.params)
+      const { user_id } = params
+
+      const { search } = req.query
+
+      const user = await prisma.user.findUnique({
+        where: {
+          id: user_id
+        }
+      })
+
+      if (!user) {
+        return res.status(404).json({
+          status: "error",
+          message: "Usuário não encontrado."
+        })
+      }
+
+      const where = {
+        userId: user_id
+      }
+
+      if (search) {
+        where.name = {
+          contains: search,
+          mode: 'insensitive'
+        }
+      }
+
       const teams = await prisma.team.findMany({
         where,
         include: {
@@ -190,9 +211,17 @@ export default class TeamsController {
         }
       })
     } catch (error) {
+      if (error instanceof z.ZodError) {
+        return res.status(400).json({
+          status: "error",
+          message: "Parâmetros inválidos",
+          errors: error.issues.map(err => ({ field: err.path.join('.'), message: err.message }))
+        })
+      }
+      console.error('Erro ao buscar times:', error)
       return res.status(500).json({
         status: "error",
-        message: "Erro ao buscar times."
+        message: "Erro interno ao buscar times."
       })
     }
   }

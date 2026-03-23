@@ -46,7 +46,7 @@ export const playerSchema = z.object({
     })
     .optional(),
 })
-//const { search, team, position } = req.query
+
 export const playerSchemaQuery = z.object({
   search: z.string()
     .trim()

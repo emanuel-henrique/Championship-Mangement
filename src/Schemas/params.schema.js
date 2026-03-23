@@ -79,3 +79,13 @@ export const basePlayerParamsSchema = z.object({
 export const playerParamsSchema = baseMatchParamsSchema.extend({
   player_id: z.coerce.number().int().positive(),
 })
+
+export const createTeamParamsSchema = z.object({
+  user_id: z.coerce.number().int().positive(),
+  champ_id: z.coerce.number().int().positive()
+})
+
+export const deleteTeamParamsSchema = z.object({
+  user_id: z.coerce.number().int().positive(),
+  team_id: z.coerce.number().int().positive()
+})

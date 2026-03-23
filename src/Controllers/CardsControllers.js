@@ -10,7 +10,8 @@ export default class CardsController {
       const { player_id, type, minute } = body
 
       const params = baseCardParamsSchema.parse(req.params)
-      const { champ_id, user_id, match_id } = params
+      const { champ_id, match_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: { id: user_id }
@@ -227,7 +228,8 @@ export default class CardsController {
   async Delete(req, res) {
     try {
       const params = deleteCardParamsSchema.parse(req.params)
-      const { champ_id, user_id, match_id, card_id } = params
+      const { champ_id, match_id, card_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: { id: user_id }

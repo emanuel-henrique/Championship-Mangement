@@ -6,7 +6,8 @@ export default class PlayersTeamsController {
   async Create(req, res) {
     try {
       const params = playerTeamsParams.parse(req.params)
-      const { team_id, user_id, player_id } = params
+      const { team_id, player_id } = params
+      const user_id = req.userId
 
       const playerToAdd = await prisma.player.findUnique({
         where: {

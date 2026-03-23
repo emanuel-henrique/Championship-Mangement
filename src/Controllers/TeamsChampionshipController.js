@@ -16,7 +16,8 @@ export default class TeamsChampionshipController {
       const { name } = body
 
       const params = createTeamParamsSchema.parse(req.params)
-      const { champ_id, user_id } = params
+      const { champ_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: {
@@ -125,7 +126,7 @@ export default class TeamsChampionshipController {
       const teamToRemove = await prisma.championshipTeam.delete({
         where: {
           id: team_id,
-          championshipId: champ_id
+          championshipId: champ_id,
         }
       })
 

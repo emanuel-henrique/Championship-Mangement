@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
-import { basePlayerParamsSchema, updateTeamParamsSchema } from "../Schemas/params.schema.js"
+import { updateTeamParamsSchema } from "../Schemas/params.schema.js"
 import { createTeamSchema, updateTeamSchema } from "../Schemas/teams.schema.js"
 
 export default class TeamsController {
@@ -9,8 +9,7 @@ export default class TeamsController {
       const body = createTeamSchema.parse(req.body)
       const { name, emblemUrl } = body
 
-      const params = basePlayerParamsSchema.parse(req.params)
-      const { user_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: { id: user_id }
@@ -68,7 +67,8 @@ export default class TeamsController {
       const { name, emblemUrl } = body
 
       const params = updateTeamParamsSchema.parse(req.params)
-      const { team_id, user_id } = params
+      const { team_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: { id: user_id }
@@ -139,7 +139,8 @@ export default class TeamsController {
   async Delete(req, res) {
     try {
       const params = updateTeamParamsSchema.parse(req.params)
-      const { team_id, user_id } = params
+      const { team_id } = params
+      const user_id = req.userId
 
       const teamToDelete = await prisma.team.delete({
         where: {
@@ -166,8 +167,7 @@ export default class TeamsController {
 
   async Index(req, res) {
     try {
-      const params = basePlayerParamsSchema.parse(req.params)
-      const { user_id } = params
+      const user_id = req.userId
 
       const { search } = req.query
 

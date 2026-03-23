@@ -6,7 +6,8 @@ export default class FinishMatchController {
   async Finish(req, res) {
     try {
       const params = matchParamsSchema.parse(req.params)
-      const { champ_id, user_id, match_id } = params
+      const { champ_id, match_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: { id: user_id }

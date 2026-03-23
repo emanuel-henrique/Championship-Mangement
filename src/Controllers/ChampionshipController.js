@@ -1,7 +1,7 @@
 import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { championshipQuerySchema, createChampionshipSchema, updateChampionshipSchema } from "../Schemas/championship.schema.js"
-import { baseChampionshipParamsSchema, championshipParamsSchema } from "../Schemas/params.schema.js"
+import { championshipParamsSchema } from "../Schemas/params.schema.js"
 
 export default class Championship {
   async Create(req, res) {
@@ -9,8 +9,7 @@ export default class Championship {
       const body = createChampionshipSchema.parse(req.body)
       const { name } = body
 
-      const params = baseChampionshipParamsSchema.parse(req.params)
-      const { user_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: { id: user_id }
@@ -68,7 +67,8 @@ export default class Championship {
   async Delete(req, res) {
     try {
       const params = championshipParamsSchema.parse(req.params)
-      const { user_id, champ_id } = params
+      const { champ_id } = params
+      const user_id = req.userId
 
       const championship = await prisma.championship.findFirst({
         where: {
@@ -115,7 +115,8 @@ export default class Championship {
       const body = updateChampionshipSchema.parse(req.body)
 
       const params = championshipParamsSchema.parse(req.params)
-      const { champ_id, user_id } = params
+      const { champ_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: { id: user_id }
@@ -171,7 +172,7 @@ export default class Championship {
 
   async Index(req, res) {
     try {
-      const { user_id } = baseChampionshipParamsSchema.parse(req.params)
+      const user_id = req.userId
       const { modality, search } = championshipQuerySchema.parse(req.query)
 
       const user = await prisma.user.findUnique({

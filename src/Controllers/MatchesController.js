@@ -10,7 +10,8 @@ export default class MatchesController {
       const { homeTeamId, awayTeamId, status, matchDate, finishedAt } = body
 
       const params = baseMatchParamsSchema.parse(req.params)
-      const { champ_id, user_id } = params
+      const { champ_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: {
@@ -99,7 +100,8 @@ export default class MatchesController {
       const { homeTeamId, awayTeamId, status, matchDate, finishedAt } = body
 
       const params = matchParamsSchema.parse(req.params)
-      const { champ_id, user_id, match_id } = params
+      const { champ_id, match_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: {
@@ -210,7 +212,8 @@ export default class MatchesController {
   async Delete(req, res) {
     try {
       const params = matchParamsSchema.parse(req.params)
-      const { champ_id, user_id, match_id } = params
+      const { champ_id, match_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: {

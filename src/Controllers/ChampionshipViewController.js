@@ -6,12 +6,11 @@ export default class ChampionshipViewController {
   async Overview(req, res) {
     try {
       const params = championshipViewerParamsSchema.parse(req.params)
-      const { user_id, champ_id } = params
+      const { champ_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
-        where: {
-          id: user_id
-        }
+        where: { id: user_id }
       })
 
       if (!user) {
@@ -21,16 +20,17 @@ export default class ChampionshipViewController {
         })
       }
 
-      const championship = await prisma.championship.findUnique({
+      const championship = await prisma.championship.findFirst({
         where: {
-          id: champ_id
+          id: champ_id,
+          userId: user_id
         }
       })
 
       if (!championship) {
         return res.status(404).json({
           status: "error",
-          message: "Campeonato não encontrado."
+          message: "Campeonato não encontrado ou não pertence a você."
         })
       }
 
@@ -115,42 +115,33 @@ export default class ChampionshipViewController {
       }
 
       console.error('Erro ao buscar dados:', error)
-      return res.status(500).json({
-        status: "error",
-        message: "Erro interno do servidor."
-      })
+      return res.status(500).json({ status: "error", message: "Erro interno do servidor." })
     }
   }
 
   async Standings(req, res) {
     try {
       const params = championshipViewerParamsSchema.parse(req.params)
-      const { user_id, champ_id } = params
+      const { champ_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
-        where: {
-          id: user_id
-        }
+        where: { id: user_id }
       })
 
       if (!user) {
-        return res.status(404).json({
-          status: "error",
-          message: "Usuário não encontrado."
-        })
+        return res.status(404).json({ status: "error", message: "Usuário não encontrado." })
       }
 
-      const championship = await prisma.championship.findUnique({
+      const championship = await prisma.championship.findFirst({
         where: {
-          id: champ_id
+          id: champ_id,
+          userId: user_id
         }
       })
 
       if (!championship) {
-        return res.status(404).json({
-          status: "error",
-          message: "Campeonato não encontrado."
-        })
+        return res.status(404).json({ status: "error", message: "Campeonato não encontrado ou não pertence a você." })
       }
 
       const standings = await prisma.championshipTeam.findMany({
@@ -175,62 +166,48 @@ export default class ChampionshipViewController {
 
       return res.status(200).json({
         status: "success",
-        data: {
-          standings
-        }
+        data: { standings }
       })
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           status: "error",
           message: "Parâmetros inválidos",
-          errors: error.issues.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          errors: error.issues.map(err => ({ field: err.path.join('.'), message: err.message }))
         })
       }
 
       console.error('Erro ao buscar dados:', error)
-      return res.status(500).json({
-        status: "error",
-        message: "Erro interno do servidor."
-      })
+      return res.status(500).json({ status: "error", message: "Erro interno do servidor." })
     }
   }
 
   async Matches(req, res) {
     try {
       const params = championshipViewerParamsSchema.parse(req.params)
-      const { user_id, champ_id } = params
+      const { champ_id } = params
+      const user_id = req.userId
 
       const query = championshipViewerQuerySchema.parse(req.query)
       const { status } = query
 
       const user = await prisma.user.findUnique({
-        where: {
-          id: user_id
-        }
+        where: { id: user_id }
       })
 
       if (!user) {
-        return res.status(404).json({
-          status: "error",
-          message: "Usuário não encontrado."
-        })
+        return res.status(404).json({ status: "error", message: "Usuário não encontrado." })
       }
 
-      const championship = await prisma.championship.findUnique({
+      const championship = await prisma.championship.findFirst({
         where: {
-          id: champ_id
+          id: champ_id,
+          userId: user_id
         }
       })
 
       if (!championship) {
-        return res.status(404).json({
-          status: "error",
-          message: "Campeonato não encontrado."
-        })
+        return res.status(404).json({ status: "error", message: "Campeonato não encontrado ou não pertence a você." })
       }
 
       let where = {
@@ -241,96 +218,68 @@ export default class ChampionshipViewController {
         where.status = status.toUpperCase()
       }
 
-      try {
-        const matches = await prisma.match.findMany({
-          where,
-          orderBy: [
-            { matchDate: 'asc' }
-          ],
-          select: {
-            id: true,
-            matchDate: true,
-            homeScore: true,
-            awayScore: true,
-            status: true,
-            awayTeam: {
-              select: {
-                id: true,
-                name: true,
-                emblemUrl: true
-              }
-            },
-            homeTeam: {
-              select: {
-                id: true,
-                name: true,
-                emblemUrl: true
-              }
-            }
+      const matches = await prisma.match.findMany({
+        where,
+        orderBy: [
+          { matchDate: 'asc' }
+        ],
+        select: {
+          id: true,
+          matchDate: true,
+          homeScore: true,
+          awayScore: true,
+          status: true,
+          awayTeam: {
+            select: { id: true, name: true, emblemUrl: true }
+          },
+          homeTeam: {
+            select: { id: true, name: true, emblemUrl: true }
           }
-        })
+        }
+      })
 
-        return res.status(200).json({
-          status: "success",
-          data: {
-            matches
-          }
-        })
-      } catch (error) {
-        return res.status(500).json({
-          status: "error",
-          message: "Erro ao buscar partidas."
-        })
-      }
+      return res.status(200).json({
+        status: "success",
+        data: { matches }
+      })
+
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           status: "error",
           message: "Parâmetros inválidos",
-          errors: error.issues.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          errors: error.issues.map(err => ({ field: err.path.join('.'), message: err.message }))
         })
       }
 
       console.error('Erro ao buscar dados:', error)
-      return res.status(500).json({
-        status: "error",
-        message: "Erro interno do servidor."
-      })
+      return res.status(500).json({ status: "error", message: "Erro interno do servidor." })
     }
   }
 
   async Teams(req, res) {
     try {
       const params = championshipViewerParamsSchema.parse(req.params)
-      const { user_id, champ_id } = params
+      const { champ_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
-        where: {
-          id: user_id
-        }
+        where: { id: user_id }
       })
 
       if (!user) {
-        return res.status(404).json({
-          status: "error",
-          message: "Usuário não encontrado."
-        })
+        return res.status(404).json({ status: "error", message: "Usuário não encontrado." })
       }
 
-      const championship = await prisma.championship.findUnique({
+      const championship = await prisma.championship.findFirst({
         where: {
-          id: champ_id
+          id: champ_id,
+          userId: user_id
         }
       })
 
       if (!championship) {
-        return res.status(404).json({
-          status: "error",
-          message: "Campeonato não encontrado."
-        })
+        return res.status(404).json({ status: "error", message: "Campeonato não encontrado ou não pertence a você." })
       }
 
       const teams = await prisma.championshipTeam.findMany({
@@ -355,59 +304,45 @@ export default class ChampionshipViewController {
 
       return res.status(200).json({
         status: "success",
-        data: {
-          teams
-        }
+        data: { teams }
       })
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           status: "error",
           message: "Parâmetros inválidos",
-          errors: error.issues.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          errors: error.issues.map(err => ({ field: err.path.join('.'), message: err.message }))
         })
       }
 
       console.error('Erro ao buscar dados:', error)
-      return res.status(500).json({
-        status: "error",
-        message: "Erro interno do servidor."
-      })
+      return res.status(500).json({ status: "error", message: "Erro interno do servidor." })
     }
   }
 
   async TopScorers(req, res) {
     try {
       const params = championshipViewerParamsSchema.parse(req.params)
-      const { user_id, champ_id } = params
+      const { champ_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
-        where: {
-          id: user_id
-        }
+        where: { id: user_id }
       })
 
       if (!user) {
-        return res.status(404).json({
-          status: "error",
-          message: "Usuário não encontrado."
-        })
+        return res.status(404).json({ status: "error", message: "Usuário não encontrado." })
       }
 
-      const championship = await prisma.championship.findUnique({
+      const championship = await prisma.championship.findFirst({
         where: {
-          id: champ_id
+          id: champ_id,
+          userId: user_id
         }
       })
 
       if (!championship) {
-        return res.status(404).json({
-          status: "error",
-          message: "Campeonato não encontrado."
-        })
+        return res.status(404).json({ status: "error", message: "Campeonato não encontrado ou não pertence a você." })
       }
 
       const topscorers = await prisma.championshipPlayer.findMany({
@@ -437,27 +372,19 @@ export default class ChampionshipViewController {
 
       return res.status(200).json({
         status: "success",
-        data: {
-          topscorers
-        }
+        data: { topscorers }
       })
     } catch (error) {
       if (error instanceof z.ZodError) {
         return res.status(400).json({
           status: "error",
           message: "Parâmetros inválidos",
-          errors: error.issues.map(err => ({
-            field: err.path.join('.'),
-            message: err.message
-          }))
+          errors: error.issues.map(err => ({ field: err.path.join('.'), message: err.message }))
         })
       }
 
       console.error('Erro ao buscar dados:', error)
-      return res.status(500).json({
-        status: "error",
-        message: "Erro interno do servidor."
-      })
+      return res.status(500).json({ status: "error", message: "Erro interno do servidor." })
     }
   }
 }

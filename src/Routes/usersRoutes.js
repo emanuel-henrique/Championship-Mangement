@@ -5,6 +5,6 @@ import UsersController from "../Controllers/UsersController.js";
 const usersController = new UsersController()
 
 usersRoutes.post("/", usersController.Create)
-usersRoutes.put("/:id", usersController.Update)
+usersRoutes.put("/", usersController.Update)
 
 export default usersRoutes

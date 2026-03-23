@@ -20,37 +20,37 @@ const championshipViewController = new ChampionshipViewController()
 const matchViewController = new MatchViewController()
 
 // CHAMPIONSHIP DEFAULT ROUTES
-championshipRoutes.post("/:user_id", championshipController.Create)
-championshipRoutes.put("/:user_id/:champ_id", championshipController.Update)
-championshipRoutes.delete("/:user_id/:champ_id", championshipController.Delete)
-championshipRoutes.get("/:user_id/", championshipController.Index)
+championshipRoutes.post("/", championshipController.Create)
+championshipRoutes.put("/:champ_id", championshipController.Update)
+championshipRoutes.delete("/:champ_id", championshipController.Delete)
+championshipRoutes.get("/", championshipController.Index)
 
 // CHAMPIONSHIP GETS
-championshipRoutes.get("/:user_id/:champ_id", championshipViewController.Overview)
-championshipRoutes.get("/:user_id/:champ_id/standings", championshipViewController.Standings)
-championshipRoutes.get("/:user_id/:champ_id/matches", championshipViewController.Matches)
-championshipRoutes.get("/:user_id/:champ_id/teams", championshipViewController.Teams)
-championshipRoutes.get("/:user_id/:champ_id/topscorers", championshipViewController.TopScorers)
+championshipRoutes.get("/:champ_id", championshipViewController.Overview)
+championshipRoutes.get("/:champ_id/standings", championshipViewController.Standings)
+championshipRoutes.get("/:champ_id/matches", championshipViewController.Matches)
+championshipRoutes.get("/:champ_id/teams", championshipViewController.Teams)
+championshipRoutes.get("/:champ_id/topscorers", championshipViewController.TopScorers)
 
 // MATCH GETS
-championshipRoutes.get("/:champ_id/:user_id/matches/:match_id", matchViewController.Show)
+championshipRoutes.get("/:champ_id/matches/:match_id", matchViewController.Show)
 
 // CHAMPIONSHIP TEAMS MANAGEMENT ROUTES
-championshipRoutes.post("/:champ_id/:user_id/teams", teamChampionshipController.Create)
+championshipRoutes.post("/:champ_id/teams", teamChampionshipController.Create)
 championshipRoutes.delete("/:champ_id/teams/:team_id", teamChampionshipController.Delete)
 
 // CHAMPIONSHIP MATCHES MANAGEMENT ROUTES
-championshipRoutes.post("/:champ_id/:user_id/matches", matchesController.Create)
-championshipRoutes.post("/:champ_id/:user_id/matches/:match_id/finish", finishMatchController.Finish)
-championshipRoutes.put("/:champ_id/:user_id/matches/:match_id", matchesController.Update)
-championshipRoutes.delete("/:champ_id/:user_id/matches/:match_id", matchesController.Delete)
+championshipRoutes.post("/:champ_id/matches", matchesController.Create)
+championshipRoutes.post("/:champ_id/matches/:match_id/finish", finishMatchController.Finish)
+championshipRoutes.put("/:champ_id/matches/:match_id", matchesController.Update)
+championshipRoutes.delete("/:champ_id/matches/:match_id", matchesController.Delete)
 
 // CHAMPIONSHIP MATCHES GOALS MANAGEMENT ROUTES
-championshipRoutes.post("/:champ_id/:user_id/matches/:match_id/details/goals", goalsController.Create.bind(goalsController))
-championshipRoutes.delete("/:champ_id/:user_id/matches/:match_id/details/goals/:goal_id", goalsController.Delete.bind(goalsController))
+championshipRoutes.post("/:champ_id/matches/:match_id/details/goals", goalsController.Create.bind(goalsController))
+championshipRoutes.delete("/:champ_id/matches/:match_id/details/goals/:goal_id", goalsController.Delete.bind(goalsController))
 
 // CHAMPIONSHIP MATCHES CARDS MANAGEMENT ROUTES
-championshipRoutes.post("/:champ_id/:user_id/matches/:match_id/details/cards", cardsController.Create)
-championshipRoutes.delete("/:champ_id/:user_id/matches/:match_id/details/cards/:card_id", cardsController.Delete)
+championshipRoutes.post("/:champ_id/matches/:match_id/details/cards", cardsController.Create)
+championshipRoutes.delete("/:champ_id/matches/:match_id/details/cards/:card_id", cardsController.Delete)
 
 export default championshipRoutes

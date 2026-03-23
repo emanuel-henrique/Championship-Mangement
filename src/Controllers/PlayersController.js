@@ -1,6 +1,6 @@
 import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
-import { basePlayerParamsSchema, playerParamsSchema } from "../Schemas/params.schema.js"
+import { playerParamsSchema } from "../Schemas/params.schema.js"
 import { playerSchema, playerSchemaQuery } from "../Schemas/player.schema.js"
 
 export default class PlayersController {
@@ -9,8 +9,7 @@ export default class PlayersController {
       const body = playerSchema.parse(req.body)
       const { name, birthDate, jerseyNumber, position } = body
 
-      const params = basePlayerParamsSchema.parse(req.params)
-      const { user_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: {
@@ -62,7 +61,8 @@ export default class PlayersController {
       const { name, birthDate, jerseyNumber, position } = body
 
       const params = playerParamsSchema.parse(req.params)
-      const { player_id, user_id } = params
+      const { player_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: {
@@ -127,7 +127,8 @@ export default class PlayersController {
   async Delete(req, res) {
     try {
       const params = playerParamsSchema.parse(req.params)
-      const { player_id, user_id } = params
+      const { player_id } = params
+      const user_id = req.userId
 
       const playerToDelete = await prisma.player.delete({
         where: {
@@ -161,8 +162,7 @@ export default class PlayersController {
       const query = playerSchemaQuery.parse(req.query)
       const { search, team, position } = query
 
-      const params = basePlayerParamsSchema.parse(req.params)
-      const { user_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: {

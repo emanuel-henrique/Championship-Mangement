@@ -2,7 +2,6 @@ import { prisma } from "../lib/prisma.js"
 import { compare, hash } from "bcryptjs"
 import { createUserSchema, updateUserSchema } from "../Schemas/user.schema.js"
 import z from "zod"
-import { userParamsSchema } from "../Schemas/params.schema.js"
 
 export default class UsersController {
   async Create(req, res) {
@@ -62,8 +61,7 @@ export default class UsersController {
       const body = updateUserSchema.parse(req.body)
       const { name, email, old_password, new_password } = body
 
-      const params = userParamsSchema.parse(req.params)
-      const { id } = params
+      const id = req.userId
 
       const userToUpdate = await prisma.user.findUnique({
         where: { id }

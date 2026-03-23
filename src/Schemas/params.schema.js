@@ -1,23 +1,12 @@
 import { z } from 'zod'
 
 export const goalParamsSchema = z.object({
-  user_id: z.coerce.number().int().positive(),
   champ_id: z.coerce.number().int().positive(),
   match_id: z.coerce.number().int().positive(),
   goal_id: z.coerce.number().int().positive().optional()
 })
 
-export const userParamsSchema = z.object({
-  id: z.coerce.number().int().positive(),
-})
-
-export const baseChampionshipParamsSchema = z.object({
-  user_id: z.coerce.number({
-    required_error: "User id is required"
-  })
-})
-
-export const championshipParamsSchema = baseChampionshipParamsSchema.extend({
+export const championshipParamsSchema = z.object({
   champ_id: z.coerce.number({
     required_error: "Championship id is required"
   })
@@ -27,11 +16,6 @@ export const baseCardParamsSchema = z.object({
   champ_id: z.coerce.number({
     required_error: "ID do campeonato é obrigatório",
     invalid_type_error: "ID do campeonato deve ser um número"
-  }).int().positive(),
-
-  user_id: z.coerce.number({
-    required_error: "ID do usuário é obrigatório",
-    invalid_type_error: "ID do usuário deve ser um número"
   }).int().positive(),
 
   match_id: z.coerce.number({
@@ -52,11 +36,6 @@ export const championshipViewerParamsSchema = z.object({
     required_error: "ID do campeonato é obrigatório",
     invalid_type_error: "ID do campeonato deve ser um número"
   }).int().positive(),
-
-  user_id: z.coerce.number({
-    required_error: "ID do usuário é obrigatório",
-    invalid_type_error: "ID do usuário deve ser um número"
-  }).int().positive(),
 })
 
 export const championshipViewerQuerySchema = z.object({
@@ -66,27 +45,21 @@ export const championshipViewerQuerySchema = z.object({
 })
 
 export const baseMatchParamsSchema = z.object({
-  user_id: z.coerce.number().int().positive(),
   champ_id: z.coerce.number().int().positive()
 })
 export const matchParamsSchema = baseMatchParamsSchema.extend({
   match_id: z.coerce.number().int().positive()
 })
 
-export const basePlayerParamsSchema = z.object({
-  user_id: z.coerce.number().int().positive(),
-})
 export const playerParamsSchema = baseMatchParamsSchema.extend({
   player_id: z.coerce.number().int().positive(),
 })
 
 export const createTeamParamsSchema = z.object({
-  user_id: z.coerce.number().int().positive(),
   champ_id: z.coerce.number().int().positive()
 })
 
 export const deleteTeamParamsSchema = z.object({
-  user_id: z.coerce.number().int().positive(),
   team_id: z.coerce.number().int().positive()
 })
 

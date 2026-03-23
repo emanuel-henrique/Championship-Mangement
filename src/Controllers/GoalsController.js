@@ -13,7 +13,8 @@ export default class GoalsController {
       const params = goalParamsSchema.parse(req.params)
 
       const { player_id, team_id, minute, isOwnGoal, assist_player_id } = body
-      const { champ_id, user_id, match_id } = params
+      const { champ_id, match_id } = params
+      const user_id = req.userId
 
       const user = await this.prisma.user.findUnique({
         where: { id: user_id }
@@ -270,7 +271,8 @@ export default class GoalsController {
   async Delete(req, res) {
     try {
       const params = goalParamsSchema.parse(req.params)
-      const { champ_id, user_id, match_id, goal_id } = params
+      const { champ_id, match_id, goal_id } = params
+      const user_id = req.userId
 
       const user = await this.prisma.user.findUnique({
         where: { id: user_id }

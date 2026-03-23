@@ -1,18 +1,10 @@
 import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 
-const dashboardControllersSchema = z.object({
-  user_id: z.coerce.number({
-    required_error: "ID do usuário é obrigatório",
-    invalid_type_error: "ID do usuário deve ser um número"
-  }).int().positive(),
-})
-
 export default class DashboardControllers {
   async getDashboardData(req, res) {
     try {
-      const params = dashboardControllersSchema.parse(req.params)
-      const { user_id } = params
+      const user_id = req.userId
 
       const user = await prisma.user.findUnique({
         where: {

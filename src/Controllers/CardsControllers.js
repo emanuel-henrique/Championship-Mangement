@@ -229,7 +229,6 @@ export default class CardsController {
       const params = deleteCardParamsSchema.parse(req.params)
       const { champ_id, user_id, match_id, card_id } = params
 
-      // 1. Validações de existência e pertencimento
       const user = await prisma.user.findUnique({
         where: { id: user_id }
       })
@@ -343,17 +342,14 @@ export default class CardsController {
         })
       }
 
-      // 2. Preparando a Transação (Exclusão Independente)
       const transactionOperations = []
 
-      // Adiciona a exclusão APENAS do cartão solicitado
       transactionOperations.push(
         prisma.card.delete({
           where: { id: card.id }
         })
       )
 
-      // Calcula os novos valores garantindo que nunca fiquem negativos
       const newYellowCount = card.type === "YELLOW"
         ? Math.max(0, championshipPlayer.yellowCards - 1)
         : championshipPlayer.yellowCards
@@ -362,7 +358,6 @@ export default class CardsController {
         ? Math.max(0, championshipPlayer.redCards - 1)
         : championshipPlayer.redCards
 
-      // Adiciona a atualização das estatísticas
       transactionOperations.push(
         prisma.championshipPlayer.update({
           where: {
@@ -378,7 +373,6 @@ export default class CardsController {
         })
       )
 
-      // 3. Executa as operações no banco de dados de forma segura
       await prisma.$transaction(transactionOperations)
 
       return res.status(200).json({

@@ -1,4 +1,4 @@
-import { z } from "zod" // <-- Import adicionado
+import { z } from "zod"
 import { prisma } from "../lib/prisma.js"
 import { basePlayerParamsSchema, playerParamsSchema } from "../Schemas/params.schema.js"
 import { playerSchema, playerSchemaQuery } from "../Schemas/player.schema.js"

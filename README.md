@@ -8,33 +8,38 @@
 
 ---
 
-## **📋 Sobre o Projeto**
-
-API robusta para controle completo de campeonatos esportivos, permitindo gerenciar times, jogadores, partidas, eventos de jogo (gols e cartões) e visualizar estatísticas em tempo real.
-
-### **✨ Principais Funcionalidades**
-
-- ✅ **Gerenciamento de Campeonatos** - CRUD completo com filtros e estatísticas
-- ✅ **Times e Jogadores** - Cadastro com posições, números de camisa e transferências
-- ✅ **Controle de Partidas** - Criar, editar, finalizar e cancelar jogos
-- ✅ **Eventos ao Vivo** - Registrar gols (incluindo assistências e contra) e cartões
-- ✅ **Cálculo Automático** - Pontuação, saldo de gols e classificação
-- ✅ **Estatísticas Completas** - Artilharia, aproveitamento, histórico de confrontos
-- ✅ **Dashboard** - Visão geral de todos os dados do usuário
+## 📋 Sobre o Projeto
+API robusta para controle completo de campeonatos esportivos, permitindo gerenciar times, jogadores, partidas, eventos de jogo (gols e cartões) e visualizar estatísticas em tempo real. Segurança em primeiro lugar com rotas protegidas por JWT.
 
 ---
 
-## **🚀 Tecnologias**
+## ✨ Principais Funcionalidades
 
-- **[Node.js](https://nodejs.org/)** - Runtime JavaScript
-- **[Express](https://expressjs.com/)** - Framework web minimalista
-- **[PostgreSQL](https://www.postgresql.org/)** - Banco de dados relacional
-- **[Prisma](https://www.prisma.io/)** - ORM moderno para Node.js
-- **[Zod](https://zod.dev/)** - Validação de schemas TypeScript-first
+- 🔒 **Segurança & Autenticação** — Sistema de login com JWT e proteção contra IDOR (Insecure Direct Object Reference).
+- ✅ **Gerenciamento de Campeonatos** — CRUD completo com filtros e estatísticas.
+- ✅ **Times e Jogadores** — Cadastro com posições, números de camisa e transferências.
+- ✅ **Controle de Partidas** — Criar, editar, finalizar e cancelar jogos.
+- ✅ **Eventos ao Vivo** — Registrar gols (incluindo assistências e contra) e cartões.
+- ✅ **Cálculo Automático** — Pontuação, saldo de gols e classificação.
+- ✅ **Estatísticas Completas** — Artilharia, aproveitamento, histórico de confrontos.
+- ✅ **Dashboard** — Visão geral de todos os dados do usuário logado.
 
 ---
 
-## **📦 Pré-requisitos**
+## 🚀 Tecnologias
+
+| Tecnologia | Descrição |
+|------------|-----------|
+| **Node.js** | Runtime JavaScript |
+| **Express** | Framework web minimalista |
+| **PostgreSQL** | Banco de dados relacional |
+| **Prisma** | ORM moderno para Node.js |
+| **Zod** | Validação de schemas TypeScript-first |
+| **JWT & Bcrypt** | Criptografia de senhas e autenticação por tokens |
+
+---
+
+## 📦 Pré-requisitos
 
 - Node.js >= 18.0.0
 - PostgreSQL >= 14
@@ -42,33 +47,33 @@ API robusta para controle completo de campeonatos esportivos, permitindo gerenci
 
 ---
 
-## **⚙️ Instalação**
+## ⚙️ Instalação
 
-### **1. Clone o repositório**
+**1. Clone o repositório**
 ```bash
 git clone https://github.com/emanuel-henrique/Championship-Management.git
 cd Championship-Management
 ```
 
-### **2. Instale as dependências**
+**2. Instale as dependências**
 ```bash
 npm install
 ```
 
-### **3. Configure as variáveis de ambiente**
+**3. Configure as variáveis de ambiente**
 
 Crie um arquivo `.env` na raiz do projeto:
-
 ```env
 DATABASE_URL="postgresql://usuario:senha@localhost:5432/championship_db"
+JWT_SECRET="sua_chave_secreta_super_segura_aqui"
 ```
 
-### **4. Execute as migrations**
+**4. Execute as migrations**
 ```bash
 npx prisma migrate dev
 ```
 
-### **5. Inicie o servidor**
+**5. Inicie o servidor**
 ```bash
 npm start
 ```
@@ -77,97 +82,127 @@ O servidor estará rodando em `http://localhost:3333` 🚀
 
 ---
 
-## **📚 Documentação da API**
+## 📚 Documentação da API
 
-### **Base URL**
+**Base URL**
 ```
 http://localhost:3333
 ```
 
+> ⚠️ **Atenção:** Com exceção das rotas de Criar Usuário e Login, todas as rotas exigem o envio do token JWT no header da requisição:
+> `Authorization: Bearer <seu_token>`
+
 ---
 
-### **📂 Endpoints**
+## 📂 Endpoints
 
-#### **👥 User**
+### 🔐 Autenticação (Públicas)
+
 ```http
-POST   /users/:user_id              # Criar usuário
-PUT    /users/:user_id              # Atualizar usuário
-DELETE /users/:user_id              # Deletar usuário
+POST   /users          # Criar conta de usuário
+POST   /auth/login     # Fazer login e gerar Token JWT
 ```
 
-#### **📊 Dashboard**
+### 👥 Usuário (Protegidas)
+
 ```http
-GET    /dashboard/:user_id          # Informações gerais (campeonatos, times, jogadores, partidas)
+PUT    /users/:id      # Atualizar perfil do usuário logado
 ```
 
-#### **🏆 Championship**
+### 📊 Dashboard
+
 ```http
-GET    /championships/:user_id                    # Listar campeonatos
-POST   /championships/:user_id                    # Criar campeonato
-PUT    /championships/:user_id/:champ_id          # Atualizar campeonato
-DELETE /championships/:champ_id/:user_id          # Deletar campeonato
+GET    /dashboard      # Informações gerais (campeonatos, times, jogadores, partidas)
+```
+
+### 🏆 Championship
+
+```http
+GET    /championships                        # Listar campeonatos do usuário logado
+POST   /championships                        # Criar campeonato
+PUT    /championships/:champ_id              # Atualizar campeonato
+DELETE /championships/:champ_id              # Deletar campeonato
 
 # Visualizações
-GET    /championships/:user_id/:champ_id                  # Overview (estatísticas gerais)
-GET    /championships/:user_id/:champ_id/standings        # Classificação
-GET    /championships/:user_id/:champ_id/matches          # Lista de partidas
-GET    /championships/:user_id/:champ_id/teams            # Times do campeonato
-GET    /championships/:user_id/:champ_id/topscorers       # Artilharia
+GET    /championships/:champ_id                     # Overview (estatísticas gerais)
+GET    /championships/:champ_id/standings           # Classificação
+GET    /championships/:champ_id/matches             # Lista de partidas
+GET    /championships/:champ_id/teams               # Times do campeonato
+GET    /championships/:champ_id/topscorers          # Artilharia
 
 # Gerenciar Times
-POST   /championships/:champ_id/:user_id/teams           # Adicionar time ao campeonato
-DELETE /championships/:champ_id/teams/:team_id           # Remover time do campeonato
+POST   /championships/:champ_id/teams               # Adicionar time ao campeonato
+DELETE /championships/:champ_id/teams/:team_id      # Remover time do campeonato
 ```
 
-#### **🏟️ Team**
+### 🏟️ Team
+
 ```http
-GET    /teams/:user_id              # Listar times
-POST   /teams/:user_id              # Criar time
-PUT    /teams/:team_id/:user_id     # Atualizar time
-DELETE /teams/:team_id/:user_id     # Deletar time
+GET    /teams                                    # Listar times do usuário logado
+POST   /teams                                    # Criar time
+PUT    /teams/:team_id                           # Atualizar time
+DELETE /teams/:team_id                           # Deletar time
 
 # Gerenciar Jogadores
-POST   /teams/:team_id/:user_id/players                  # Adicionar jogador ao time
-DELETE /teams/:team_id/:user_id/players/:player_id       # Remover jogador do time
+POST   /teams/:team_id/players                   # Adicionar jogador ao time
+DELETE /teams/:team_id/players/:player_id        # Remover jogador do time
 ```
 
-#### **👤 Player**
+### 👤 Player
+
 ```http
-GET    /players/:user_id                    # Listar jogadores
-POST   /players/:user_id                    # Criar jogador
-PUT    /players/:player_id/:user_id         # Atualizar jogador
-DELETE /players/:player_id/:user_id         # Deletar jogador
+GET    /players                  # Listar jogadores do usuário logado
+POST   /players                  # Criar jogador
+PUT    /players/:player_id       # Atualizar jogador
+DELETE /players/:player_id       # Deletar jogador
 ```
 
-#### **⚽ Match**
+### ⚽ Match
+
 ```http
-GET    /championships/:champ_id/:user_id/matches/:match_id          # Detalhes da partida
-POST   /championships/:champ_id/:user_id/matches                    # Criar partida
-PUT    /championships/:champ_id/:user_id/matches/:match_id          # Atualizar partida
-DELETE /championships/:champ_id/:user_id/matches/:match_id          # Deletar partida
-POST   /championships/:champ_id/:user_id/matches/:match_id/finish   # Finalizar partida
+GET    /championships/:champ_id/matches/:match_id           # Detalhes da partida
+POST   /championships/:champ_id/matches                     # Criar partida
+PUT    /championships/:champ_id/matches/:match_id           # Atualizar partida
+DELETE /championships/:champ_id/matches/:match_id           # Deletar partida
+POST   /championships/:champ_id/matches/:match_id/finish    # Finalizar partida
 ```
 
-#### **🎯 Goals**
+### 🎯 Goals
+
 ```http
-POST   /championships/:champ_id/:user_id/matches/:match_id/details/goals           # Adicionar gol
-DELETE /championships/:champ_id/:user_id/matches/:match_id/details/goals/:goal_id  # Remover gol
+POST   /championships/:champ_id/matches/:match_id/details/goals              # Adicionar gol
+DELETE /championships/:champ_id/matches/:match_id/details/goals/:goal_id     # Remover gol
 ```
 
-#### **🟨 Cards**
+### 🟨 Cards
+
 ```http
-POST   /championships/:champ_id/:user_id/matches/:match_id/details/cards           # Adicionar cartão
-DELETE /championships/:champ_id/:user_id/matches/:match_id/details/cards/:card_id  # Remover cartão
+POST   /championships/:champ_id/matches/:match_id/details/cards              # Adicionar cartão
+DELETE /championships/:champ_id/matches/:match_id/details/cards/:card_id     # Remover cartão
 ```
 
 ---
 
-### **📝 Exemplos de Requisições**
+## 📝 Exemplos de Requisições
 
-#### **Criar Campeonato**
+### Fazer Login
+
 ```http
-POST /championships/user_id
+POST /auth/login
 Content-Type: application/json
+
+{
+  "email": "admin@teste.com",
+  "password": "senha_segura_123"
+}
+```
+
+### Criar Campeonato (Requer Token)
+
+```http
+POST /championships
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5...
 
 {
   "name": "Copa Sul-Americana 2025",
@@ -179,7 +214,7 @@ Content-Type: application/json
 }
 ```
 
-**Response (201):**
+**Response `201`:**
 ```json
 {
   "status": "success",
@@ -199,54 +234,14 @@ Content-Type: application/json
 }
 ```
 
----
+### Ver Classificação (Requer Token)
 
-#### **Registrar Gol**
 ```http
-POST /championships/champ_id/user_id/matches/match_id/details/goals
-Content-Type: application/json
-
-{
-  "player_id": 23,
-  "team_id": 7,
-  "minute": 34,
-  "isOwnGoal": false,
-  "assist_player_id": 15
-}
+GET /championships/:champ_id/standings
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5...
 ```
 
-**Response (201):**
-```json
-{
-  "status": "success",
-  "data": {
-    "goal": {
-      "id": 42,
-      "matchId": 10,
-      "playerId": 23,
-      "teamId": 7,
-      "assistPlayerId": 15,
-      "minute": 34,
-      "isOwnGoal": false
-    },
-    "match": {
-      "id": 10,
-      "homeScore": 2,
-      "awayScore": 1,
-      "status": "IN_PROGRESS"
-    }
-  }
-}
-```
-
----
-
-#### **Ver Classificação**
-```http
-GET /championships/user_id/champ_id/standings
-```
-
-**Response (200):**
+**Response `200`:**
 ```json
 {
   "status": "success",
@@ -264,20 +259,6 @@ GET /championships/user_id/champ_id/standings
       "losses": 0,
       "goalsFor": 24,
       "goalsAgainst": 5
-    },
-    {
-      "id": 2,
-      "team": {
-        "id": 3,
-        "name": "Palmeiras",
-        "emblemUrl": "https://example.com/palmeiras.png"
-      },
-      "points": 15,
-      "wins": 5,
-      "draws": 0,
-      "losses": 1,
-      "goalsFor": 18,
-      "goalsAgainst": 7
     }
   ]
 }
@@ -285,47 +266,33 @@ GET /championships/user_id/champ_id/standings
 
 ---
 
-#### **Dashboard**
-```http
-GET /dashboard/user_id
-```
+## 🎯 Regras de Negócio
 
-**Response (200):**
-```json
-{
-  "status": "success",
-  "data": {
-    "championships": 3,
-    "teams": 12,
-    "players": 156,
-    "matches": 48
-  }
-}
-```
+### Sistema de Pontuação
 
----
+| Resultado | Pontos |
+|-----------|--------|
+| Vitória | 3 |
+| Empate | 1 |
+| Derrota | 0 |
 
-## **🎯 Regras de Negócio**
+### Eventos de Jogo
 
-### **Sistema de Pontuação**
-- Vitória: **3 pontos**
-- Empate: **1 ponto**
-- Derrota: **0 pontos**
+- ⚽ **Gol Contra** — Inverte o placar automaticamente (incrementa gols do adversário).
+- 🟨 **Cartões** — 2º amarelo = vermelho automático.
+- 🎯 **Assistências** — Vinculadas aos gols, incrementam estatísticas do jogador.
 
-### **Eventos de Jogo**
-- ⚽ **Gol Contra**: Inverte o placar automaticamente (incrementa gols do adversário)
-- 🟨 **Cartões**: 2º amarelo = vermelho automático
-- 🎯 **Assistências**: Vinculadas aos gols, incrementam estatísticas do jogador
+### Validações
 
-### **Validações**
-- ✅ Não pode adicionar gol/cartão em partida cancelada ou finalizada
-- ✅ Jogador deve pertencer ao time que está jogando
-- ✅ Time deve estar participando do campeonato
-- ✅ Usuário só pode modificar seus próprios dados
+- ✅ Requer autenticação (JWT) para todas as rotas restritas.
+- ✅ Não pode adicionar gol/cartão em partida cancelada ou finalizada.
+- ✅ Jogador deve pertencer ao time que está jogando.
+- ✅ Time deve estar participando do campeonato.
+- ✅ Proteção contra IDOR: Usuário só pode acessar e modificar seus próprios dados.
 
 ---
 
-## **🗂️ Estrutura do Projeto**
+## 🗂️ Estrutura do Projeto
 
 ```
 Championship-Management/
@@ -334,38 +301,30 @@ Championship-Management/
 │   └── schema.prisma       # Schema do Prisma
 ├── src/
 │   ├── Controllers/        # Lógica de negócio
-│   ├── Routes/            # Definição de rotas
-│   ├── Schemas/           # Validações Zod
-│   ├── lib/               # Configurações (Prisma, etc)
-│   └── server.js          # Entry point
-├── .env                   # Variáveis de ambiente
+│   ├── Middlewares/        # Interceptadores (ex: Autenticação JWT)
+│   ├── Routes/             # Definição de rotas separadas por domínio
+│   ├── Schemas/            # Validações Zod
+│   ├── lib/                # Configurações (Prisma, etc)
+│   └── server.js           # Entry point
+├── .env                    # Variáveis de ambiente
 ├── package.json
 └── README.md
 ```
 
 ---
 
-## **🛠️ Scripts Disponíveis**
-
-```bash
-npm start          # Inicia o servidor
-npx prisma migrate dev    # Executa migrations
-npx prisma studio         # Abre Prisma Studio (GUI do banco)
-```
-
----
-
-## **🔐 Variáveis de Ambiente**
+## 🔐 Variáveis de Ambiente
 
 | Variável | Descrição | Exemplo |
 |----------|-----------|---------|
 | `DATABASE_URL` | String de conexão PostgreSQL | `postgresql://user:pass@localhost:5432/db` |
+| `JWT_SECRET` | Chave secreta para assinatura dos tokens JWT | `sua_chave_secreta_aqui` |
 
 ---
 
-## **🚧 Roadmap**
+## 🚧 Roadmap
 
-- [ ] Autenticação JWT
+- [x] Autenticação JWT e proteção de rotas
 - [ ] Upload de emblemas de times
 - [ ] Sistema de notificações
 - [ ] Exportação de relatórios (PDF)
@@ -375,7 +334,7 @@ npx prisma studio         # Abre Prisma Studio (GUI do banco)
 
 ---
 
-## **🤝 Contribuindo**
+## 🤝 Contribuindo
 
 Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull requests.
 
@@ -387,13 +346,13 @@ Contribuições são bem-vindas! Sinta-se à vontade para abrir issues ou pull r
 
 ---
 
-## **📄 Licença**
+## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
 ---
 
-## **👤 Autor**
+## 👤 Autor
 
 **Emanuel Henrique**
 
@@ -401,10 +360,6 @@ Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para ma
 
 ---
 
-## **⭐ Mostre seu apoio**
-
-Se este projeto foi útil pra você, dê uma ⭐️!
-
----
-
-**Feito com ❤️ e ☕**
+> ⭐ Se este projeto foi útil pra você, dê uma estrela!
+>
+> Feito com ❤️ e ☕
